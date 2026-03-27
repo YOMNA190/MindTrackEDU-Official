@@ -1,10 +1,7 @@
 import { RiskLevel, PrimaryIssue } from '@prisma/client';
 import { ScreeningInput, ScreeningResult, PHQ9Thresholds, GAD7Thresholds } from '../types';
 
-/**
- * PHQ-9 Scoring according to international clinical standards
- * 0-4: Minimal, 5-9: Mild, 10-14: Moderate, 15-19: Moderately Severe, 20-27: Severe
- */
+// Default thresholds
 const PHQ9_THRESHOLDS: PHQ9Thresholds = {
   low: 5,
   moderate: 10,
@@ -12,10 +9,6 @@ const PHQ9_THRESHOLDS: PHQ9Thresholds = {
   severe: 20,
 };
 
-/**
- * GAD-7 Scoring according to international clinical standards
- * 0-4: Minimal, 5-9: Mild, 10-14: Moderate, 15-21: Severe
- */
 const GAD7_THRESHOLDS: GAD7Thresholds = {
   low: 5,
   moderate: 10,
@@ -23,21 +16,31 @@ const GAD7_THRESHOLDS: GAD7Thresholds = {
 };
 
 /**
- * Weighted score calculation for multi-dimensional screening
+ * Calculate PHQ-9 score from answers
  */
-export function calculateWeightedScore(answers: Record<string, number>, weights?: Record<string, number>): number {
-  return Object.entries(answers).reduce((sum, [key, score]) => {
-    const weight = weights && weights[key] ? weights[key] : 1;
-    return sum + (score * weight);
-  }, 0);
+export function calculatePHQ9Score(answers: Record<string, number>): number {
+  return Object.values(answers).reduce((sum, score) => sum + score, 0);
 }
 
 /**
- * Enhanced risk level determination with suicidal ideation flag
+ * Calculate GAD-7 score from answers
  */
-export function determineRiskLevel(phq9Score: number, gad7Score: number, hasSuicidalIdeation: boolean = false): RiskLevel {
-  if (hasSuicidalIdeation) return RiskLevel.SEVERE;
-  
+export function calculateGAD7Score(answers: Record<string, number>): number {
+  return Object.values(answers).reduce((sum, score) => sum + score, 0);
+}
+
+/**
+ * Calculate Focus score from answers
+ */
+export function calculateFocusScore(answers: Record<string, number>): number {
+  return Object.values(answers).reduce((sum, score) => sum + score, 0);
+}
+
+/**
+ * Determine risk level based on PHQ-9 and GAD-7 scores
+ */
+export function determineRiskLevel(phq9Score: number, gad7Score: number): RiskLevel {
+  // Use the higher of the two scores to determine risk
   const maxScore = Math.max(phq9Score, gad7Score);
   
   if (maxScore < PHQ9_THRESHOLDS.low) {
@@ -52,39 +55,40 @@ export function determineRiskLevel(phq9Score: number, gad7Score: number, hasSuic
 }
 
 /**
- * Primary issue determination using weighted probability
+ * Determine primary issue based on scores
  */
 export function determinePrimaryIssue(
   phq9Score: number,
   gad7Score: number,
   focusScore: number
 ): PrimaryIssue {
-  const normalizedScores = [
-    { issue: PrimaryIssue.DEPRESSION, score: phq9Score / 27 },
-    { issue: PrimaryIssue.ANXIETY, score: gad7Score / 21 },
-    { issue: PrimaryIssue.FOCUS, score: focusScore / 15 }, // Focus max is typically 15
+  const scores = [
+    { issue: PrimaryIssue.DEPRESSION, score: phq9Score },
+    { issue: PrimaryIssue.ANXIETY, score: gad7Score },
+    { issue: PrimaryIssue.FOCUS, score: focusScore * 1.5 }, // Weight focus higher
   ];
 
-  normalizedScores.sort((a, b) => b.score - a.score);
+  scores.sort((a, b) => b.score - a.score);
   
-  if (normalizedScores[0].score < 0.2) {
+  // If all scores are low, mark as stress/other
+  if (scores[0].score < 5) {
     return PrimaryIssue.STRESS;
   }
 
-  return normalizedScores[0].issue;
+  return scores[0].issue;
 }
 
 /**
- * Calculate academic impact score (0-1) with improved weighting
+ * Calculate academic impact score (0-1)
  */
 export function calculateAcademicImpact(focusAnswers: Record<string, number>): number {
-  const focusScore = calculateWeightedScore(focusAnswers);
-  const maxFocusScore = Object.keys(focusAnswers).length * 3;
+  const focusScore = calculateFocusScore(focusAnswers);
+  const maxFocusScore = Object.keys(focusAnswers).length * 3; // Max score per question is 3
   return Math.min(focusScore / maxFocusScore, 1);
 }
 
 /**
- * Generate clinically-aligned explanation text
+ * Generate explanation text based on results
  */
 export function generateExplanation(
   riskLevel: RiskLevel,
@@ -94,20 +98,20 @@ export function generateExplanation(
 ): { en: string; ar: string } {
   const explanations: Record<RiskLevel, { en: string; ar: string }> = {
     [RiskLevel.LOW]: {
-      en: 'Your screening indicates minimal symptoms. Maintain well-being with healthy habits.',
-      ar: 'يشير الفحص إلى أعراض طفيفة. حافظ على صحتك النفسية من خلال عادات صحية.',
+      en: 'Your screening indicates minimal symptoms. Continue maintaining your mental well-being with healthy habits.',
+      ar: 'يشير الفحص إلى أعراض طفيفة. استمر في الحفاظ على صحتك النفسية من خلال عادات صحية.',
     },
     [RiskLevel.MODERATE]: {
-      en: 'Your screening shows mild to moderate symptoms. Self-help and monitoring are recommended.',
-      ar: 'يُظهر الفحص أعراضًا خفيفة إلى متوسطة. يُنصح بالمساعدة الذاتية والمراقبة.',
+      en: 'Your screening shows mild to moderate symptoms. Consider self-help resources and monitor your progress.',
+      ar: 'يُظهر الفحص أعراضًا خفيفة إلى متوسطة. فكر في موارد المساعدة الذاتية وراقب تقدمك.',
     },
     [RiskLevel.HIGH]: {
-      en: 'Your screening indicates significant symptoms. Professional clinical support is highly recommended.',
-      ar: 'يشير الفحص إلى أعراض كبيرة. يُوصى بشدة بالحصول على دعم سريري مهني.',
+      en: 'Your screening indicates significant symptoms. Professional support is recommended to help you feel better.',
+      ar: 'يشير الفحص إلى أعراض كبيرة. يُوصى بالحصول على دعم مهني لمساعدتك على الشعور بشكل أفضل.',
     },
     [RiskLevel.SEVERE]: {
-      en: 'Your screening shows severe symptoms. Immediate professional intervention is advised.',
-      ar: 'يُظهر الفحص أعراضًا شديدة. يُنصح بالتدخل المهني الفوري.',
+      en: 'Your screening shows severe symptoms. Please seek professional help as soon as possible.',
+      ar: 'يُظهر الفحص أعراضًا شديدة. يرجى طلب المساعدة المهنية في أقرب وقت ممكن.',
     },
   };
 
@@ -123,24 +127,21 @@ export function generateExplanation(
   const issueName = issueNames[primaryIssue];
 
   return {
-    en: `${baseExplanation.en} Primary area of focus: ${issueName.en}. (PHQ-9: ${phq9Score}, GAD-7: ${gad7Score})`,
-    ar: `${baseExplanation.ar} التركيز الأساسي: ${issueName.ar}. (PHQ-9: ${phq9Score}، GAD-7: ${gad7Score})`,
+    en: `${baseExplanation.en} Primary concern: ${issueName.en}. PHQ-9: ${phq9Score}/27, GAD-7: ${gad7Score}/21.`,
+    ar: `${baseExplanation.ar} القلق الأساسي: ${issueName.ar}. PHQ-9: ${phq9Score}/27، GAD-7: ${gad7Score}/21.`,
   };
 }
 
 /**
- * Process a complete screening and return results with enhanced analytics
+ * Process a complete screening and return results
  */
 export function processScreening(input: ScreeningInput): ScreeningResult {
-  const phq9Score = calculateWeightedScore(input.phq9Answers);
-  const gad7Score = calculateWeightedScore(input.gad7Answers);
-  const focusScore = calculateWeightedScore(input.focusAnswers);
+  const phq9Score = calculatePHQ9Score(input.phq9Answers);
+  const gad7Score = calculateGAD7Score(input.gad7Answers);
+  const focusScore = calculateFocusScore(input.focusAnswers);
   const totalScore = phq9Score + gad7Score + focusScore;
 
-  // Check for suicidal ideation (typically Q9 in PHQ-9)
-  const hasSuicidalIdeation = input.phq9Answers['q9'] > 0;
-
-  const riskLevel = determineRiskLevel(phq9Score, gad7Score, hasSuicidalIdeation);
+  const riskLevel = determineRiskLevel(phq9Score, gad7Score);
   const primaryIssue = determinePrimaryIssue(phq9Score, gad7Score, focusScore);
   const academicImpactScore = calculateAcademicImpact(input.focusAnswers);
   const explanation = generateExplanation(riskLevel, primaryIssue, phq9Score, gad7Score);
@@ -155,4 +156,14 @@ export function processScreening(input: ScreeningInput): ScreeningResult {
     academicImpactScore,
     explanation,
   };
+}
+
+/**
+ * Check if student qualifies for subsidized therapy
+ */
+export function qualifiesForSubsidy(
+  riskLevel: RiskLevel,
+  academicImpactScore: number
+): boolean {
+  return riskLevel !== RiskLevel.LOW || academicImpactScore > 0.5;
 }

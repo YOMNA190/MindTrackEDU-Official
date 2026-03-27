@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="60" fill="#0A4D4C"/>
+  <text x="40" y="38" fill="white" font-family="Arial" font-size="20" font-weight="bold">NSMPI</text>
+  
+  <!-- Main Content -->
+  <rect x="50" y="100" width="700" height="450" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="400" y="150" text-anchor="middle" fill="#1e293b" font-family="Arial" font-size="24" font-weight="bold">Mental Health Screening</text>
+  <text x="400" y="180" text-anchor="middle" fill="#64748b" font-family="Arial" font-size="14">Complete this assessment to understand your mental well-being</text>
+  
+  <!-- Progress Bar -->
+  <rect x="100" y="210" width="600" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="100" y="210" width="200" height="8" rx="4" fill="#0A4D4C"/>
+  <text x="400" y="240" text-anchor="middle" fill="#64748b" font-family="Arial" font-size="12">Step 1 of 3: PHQ-9 Assessment</text>
+  
+  <!-- Question -->
+  <text x="100" y="290" fill="#1e293b" font-family="Arial" font-size="16" font-weight="bold">Question 1 of 9</text>
+  <text x="100" y="320" fill="#334155" font-family="Arial" font-size="14">Over the last 2 weeks, how often have you been bothered by</text>
+  <text x="100" y="345" fill="#334155" font-family="Arial" font-size="14">little interest or pleasure in doing things?</text>
+  
+  <!-- Options -->
+  <rect x="100" y="380" width="600" height="50" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="120" y="412" fill="#334155" font-family="Arial" font-size="14">Not at all</text>
+  
+  <rect x="100" y="440" width="600" height="50" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="120" y="472" fill="#334155" font-family="Arial" font-size="14">Several days</text>
+  
+  <rect x="100" y="500" width="600" height="50" rx="6" fill="#0A4D4C" stroke="#0A4D4C" stroke-width="1"/>
+  <text x="120" y="532" fill="white" font-family="Arial" font-size="14">More than half the days</text>
+  
+  <!-- Footer Note -->
+  <text x="400" y="580" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="12">Screenshot Placeholder - Student Screening Form</text>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="60" fill="#0A4D4C"/>
+  <text x="40" y="38" fill="white" font-family="Arial" font-size="20" font-weight="bold">NSMPI</text>
+  <text x="650" y="38" fill="white" font-family="Arial" font-size="14">Super Admin</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="60" width="200" height="540" fill="white" stroke="#e2e8f0"/>
+  <rect x="0" y="80" width="200" height="40" fill="#0A4D4C" opacity="0.1"/>
+  <text x="20" y="105" fill="#0A4D4C" font-family="Arial" font-size="14" font-weight="bold">Dashboard</text>
+  <text x="20" y="145" fill="#64748b" font-family="Arial" font-size="14">Users</text>
+  <text x="20" y="185" fill="#64748b" font-family="Arial" font-size="14">Therapists</text>
+  <text x="20" y="225" fill="#64748b" font-family="Arial" font-size="14">Audit Logs</text>
+  <text x="20" y="265" fill="#64748b" font-family="Arial" font-size="14">Settings</text>
+  
+  <!-- Main Content -->
+  <text x="230" y="100" fill="#1e293b" font-family="Arial" font-size="24" font-weight="bold">Admin Dashboard</text>
+  
+  <!-- Stats Cards -->
+  <rect x="230" y="120" width="130" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+  <text x="250" y="150" fill="#64748b" font-family="Arial" font-size="11">Total Users</text>
+  <text x="250" y="180" fill="#0A4D4C" font-family="Arial" font-size="24" font-weight="bold">5.2K</text>
+  
+  <rect x="380" y="120" width="130" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+  <text x="400" y="150" fill="#64748b" font-family="Arial" font-size="11">Pending Requests</text>
+  <text x="400" y="180" fill="#f97316" font-family="Arial" font-size="24" font-weight="bold">24</text>
+  
+  <rect x="530" y="120" width="130" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+  <text x="550" y="150" fill="#64748b" font-family="Arial" font-size="11">Pending Verifications</text>
+  <text x="550" y="180" fill="#eab308" font-family="Arial" font-size="24" font-weight="bold">8</text>
+  
+  <rect x="680" y="120" width="100" height="80" rx="8" fill="white" stroke="#e2e8f0"/>
+  <text x="700" y="150" fill="#64748b" font-family="Arial" font-size="11">Active Now</text>
+  <text x="700" y="180" fill="#22c55e" font-family="Arial" font-size="24" font-weight="bold">342</text>
+  
+  <!-- Recent Users Table -->
+  <rect x="230" y="220" width="550" height="280" rx="8" fill="white" stroke="#e2e8f0"/>
+  <text x="250" y="255" fill="#1e293b" font-family="Arial" font-size="16" font-weight="bold">Recent Users</text>
+  <rect x="450" y="240" width="100" height="30" rx="4" fill="#0A4D4C"/>
+  <text x="500" y="260" text-anchor="middle" fill="white" font-family="Arial" font-size="12">+ Add User</text>
+  
+  <!-- Table Header -->
+  <rect x="250" y="280" width="510" height="35" rx="4" fill="#f1f5f9"/>
+  <text x="270" y="302" fill="#64748b" font-family="Arial" font-size="12" font-weight="bold">Name</text>
+  <text x="380" y="302" fill="#64748b" font-family="Arial" font-size="12" font-weight="bold">Email</text>
+  <text x="520" y="302" fill="#64748b" font-family="Arial" font-size="12" font-weight="bold">Role</text>
+  <text x="620" y="302" fill="#64748b" font-family="Arial" font-size="12" font-weight="bold">Status</text>
+  <text x="700" y="302" fill="#64748b" font-family="Arial" font-size="12" font-weight="bold">Actions</text>
+  
+  <!-- Table Rows -->
+  <rect x="250" y="320" width="510" height="35" rx="4" fill="white"/>
+  <text x="270" y="342" fill="#374151" font-family="Arial" font-size="12">Ahmed Hassan</text>
+  <text x="380" y="342" fill="#6b7280" font-family="Arial" font-size="11">ahmed@demo.edu</text>
+  <text x="520" y="342" fill="#374151" font-family="Arial" font-size="11">Student</text>
+  <rect x="615" y="328" width="50" height="20" rx="10" fill="#dcfce7"/>
+  <text x="640" y="342" text-anchor="middle" fill="#166534" font-family="Arial" font-size="10">Active</text>
+  <text x="700" y="342" fill="#0A4D4C" font-family="Arial" font-size="11">Edit</text>
+  
+  <rect x="250" y="360" width="510" height="35" rx="4" fill="#f9fafb"/>
+  <text x="270" y="382" fill="#374151" font-family="Arial" font-size="12">Dr. Nadia F.</text>
+  <text x="380" y="382" fill="#6b7280" font-family="Arial" font-size="11">nadia@nsmpi.gov</text>
+  <text x="520" y="382" fill="#374151" font-family="Arial" font-size="11">Therapist</text>
+  <rect x="615" y="368" width="50" height="20" rx="10" fill="#dcfce7"/>
+  <text x="640" y="382" text-anchor="middle" fill="#166534" font-family="Arial" font-size="10">Active</text>
+  <text x="700" y="382" fill="#0A4D4C" font-family="Arial" font-size="11">Edit</text>
+  
+  <rect x="250" y="400" width="510" height="35" rx="4" fill="white"/>
+  <text x="270" y="422" fill="#374151" font-family="Arial" font-size="12">Fatima Ali</text>
+  <text x="380" y="422" fill="#6b7280" font-family="Arial" font-size="11">fatima@moedu.gov</text>
+  <text x="520" y="422" fill="#374151" font-family="Arial" font-size="11">Edu Admin</text>
+  <rect x="615" y="408" width="50" height="20" rx="10" fill="#dcfce7"/>
+  <text x="640" y="422" text-anchor="middle" fill="#166534" font-family="Arial" font-size="10">Active</text>
+  <text x="700" y="422" fill="#0A4D4C" font-family="Arial" font-size="11">Edit</text>
+  
+  <rect x="250" y="440" width="510" height="35" rx="4" fill="#f9fafb"/>
+  <text x="270" y="462" fill="#374151" font-family="Arial" font-size="12">Khaled M.</text>
+  <text x="380" y="462" fill="#6b7280" font-family="Arial" font-size="11">khaled@moh.gov</text>
+  <text x="520" y="462" fill="#374151" font-family="Arial" font-size="11">Health Admin</text>
+  <rect x="615" y="448" width="50" height="20" rx="10" fill="#dcfce7"/>
+  <text x="640" y="462" text-anchor="middle" fill="#166534" font-family="Arial" font-size="10">Active</text>
+  <text x="700" y="462" fill="#0A4D4C" font-family="Arial" font-size="11">Edit</text>
+  
+  <!-- Pagination -->
+  <text x="650" y="500" fill="#64748b" font-family="Arial" font-size="12">← Previous</text>
+  <text x="730" y="500" fill="#64748b" font-family="Arial" font-size="12">Next →</text>
+  
+  <!-- Footer Note -->
+  <text x="500" y="580" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="12">Screenshot Placeholder - Admin Panel</text>
+</svg>
