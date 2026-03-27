@@ -519,7 +519,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
     *   `VITE_API_URL`: رابط الواجهة الخلفية الخاص بك على Railway متبوعًا بـ `/api` (مثلاً: `https://backend-production.up.railway.app/api`).
     *   `VITE_SOCKET_URL`: رابط الواجهة الخلفية الخاص بك على Railway (مثلاً: `https://backend-production.up.railway.app`).
     
-    *ملاحظة:* ستقوم Railway بقراءة ملف `Dockerfile` و `railway.toml` تلقائيًا لبناء ونشر الواجهة الخلفية وقاعدة البيانات و Redis في دقائق.
+    *ملاحظة:* ستقوم Railway باستخدام نظام `Nixpacks` (عبر ملف `railway.toml`) لبناء ونشر الواجهة الخلفية. هذا النظام أكثر استقراراً في التعامل مع المشاريع التي تحتوي على مجلدات فرعية.
 6.  **نسخ رابط الواجهة الخلفية:** بعد نجاح النشر، سيوفر لك Railway رابطًا للواجهة الخلفية (مثلاً: `https://backend-production.up.railway.app`). **انسخي هذا الرابط**، ستحتاجينه في الخطوة التالية.
 
 ### الخطوة الثانية: رفع الواجهة الأمامية (Frontend) على Vercel
@@ -543,7 +543,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 *   **الاستقرار (Stability):** سيظل `Socket.io` يعمل بسلاسة، مما يضمن استمرارية الدردشة بين الطلاب والمعالجين دون انقطاع في الخدمة.
 *   **الأمان (Security):** ستكون قاعدة البيانات و Redis في بيئة معزولة ومحمية، مما يعزز أمان البيانات.
 *   **قابلية التوسع (Scalability):** إذا نما المشروع، يمكنك زيادة موارد الخادم بسهولة بضغطة زر واحدة دون الحاجة لتعديل أي سطر من التعليمات البرمجية.
-*   **تحسين البناء (Optimized Build):** تم إضافة ملف `railway.toml` في مجلد الواجهة الخلفية (`nsmpi/backend`) لتوجيه Railway صراحةً لاستخدام `Dockerfile` الخاص بالمشروع، مما يحل مشكلة "Error creating build plan with Railpack" ويضمن عملية بناء صحيحة وفعالة.
+*   **تحسين البناء (Optimized Build):** تم تحويل نظام البناء إلى `Nixpacks` عبر ملف `railway.toml` في مجلد `nsmpi/backend`. هذا يحل مشكلة "Error creating build plan with Railpack" التي تحدث أحياناً عند استخدام Dockerfiles في مجلدات فرعية عميقة. كما تم إضافة ملف `Procfile` لضمان تشغيل السيرفر بشكل صحيح.
 
 --- 
 
