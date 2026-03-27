@@ -493,3 +493,61 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   Built with ❤️ for student mental health
 </p>
+# دليل الرفع (Deployment Guide)
+
+بناءً على التحليل الهندسي، فإن أفضل وأقوى حل لرفع مشروع `MindTrackEDU-Official`، مع الحفاظ على وظائف الدردشة المشفرة والمهام الخلفية، هو **التقسيم الذكي**:
+
+*   **الواجهة الأمامية (Frontend):** تُرفع على [Vercel](https://vercel.com/)، لسرعته وكفاءته في توزيع المحتوى عالميًا.
+*   **الواجهة الخلفية (Backend) وقاعدة البيانات (Database) و Redis:** تُرفع على [Railway.app](https://railway.app/)، لدعمه لـ Docker و WebSockets والمهام الخلفية.
+
+--- 
+
+## 🛠️ الخطوات العملية
+
+### الخطوة الأولى: رفع الواجهة الخلفية (Backend) على Railway
+
+1.  **تسجيل الدخول:** ادخلي على [Railway.app](https://railway.app/) وسجلي الدخول باستخدام حساب GitHub الخاص بك.
+2.  **إنشاء مشروع جديد:** اضغطي على **New Project** ثم اختاري **Deploy from GitHub repo**.
+3.  **اختيار الريبو:** اختاري الريبو `YOMNA190/MindTrackEDU-Official`.
+4.  **تحديد مسار الجذر (Root Directory):** عندما يُطلب منك تحديد مسار الجذر، اختاري `/nsmpi/backend`.
+5.  **إعداد المتغيرات البيئية (Environment Variables):** هذه خطوة **بالغة الأهمية**. في إعدادات المتغيرات على Railway، أضيفي جميع المتغيرات الموجودة في ملف `.env.example` الرئيسي (الموجود في `nsmpi/.env.example`). تأكدي بشكل خاص من إضافة وتعيين القيم الصحيحة للمتغيرات التالية:
+    *   `DATABASE_URL`: رابط اتصال قاعدة البيانات (PostgreSQL) الذي توفره Railway. ستقوم Railway تلقائيًا بإنشاء قاعدة بيانات PostgreSQL لك وتوفير هذا الرابط.
+    *   `REDIS_URL`: رابط اتصال Redis الذي توفره Railway. ستقوم Railway تلقائيًا بإنشاء خدمة Redis لك وتوفير هذا الرابط.
+    *   `JWT_SECRET`: مفتاح سري قوي وطويل (32 حرفًا على الأقل) لتوقيع رموز JWT.
+    *   `ENCRYPTION_KEY`: مفتاح تشفير قوي وطويل (32 حرفًا) لتشفير البيانات الحساسة.
+    *   `FRONTEND_URL`: رابط الواجهة الأمامية بعد رفعها على Vercel (مثلاً: `https://your-frontend-app.vercel.app`). هذا ضروري لـ CORS و Socket.io.
+    *   `VITE_API_URL`: رابط الواجهة الخلفية الخاص بك على Railway متبوعًا بـ `/api` (مثلاً: `https://backend-production.up.railway.app/api`).
+    *   `VITE_SOCKET_URL`: رابط الواجهة الخلفية الخاص بك على Railway (مثلاً: `https://backend-production.up.railway.app`).
+    
+    *ملاحظة:* ستقوم Railway بقراءة ملف `Dockerfile` و `railway.toml` تلقائيًا لبناء ونشر الواجهة الخلفية وقاعدة البيانات و Redis في دقائق.
+6.  **نسخ رابط الواجهة الخلفية:** بعد نجاح النشر، سيوفر لك Railway رابطًا للواجهة الخلفية (مثلاً: `https://backend-production.up.railway.app`). **انسخي هذا الرابط**، ستحتاجينه في الخطوة التالية.
+
+### الخطوة الثانية: رفع الواجهة الأمامية (Frontend) على Vercel
+
+1.  **تسجيل الدخول:** ادخلي على [Vercel](https://vercel.com/) واربطي حساب GitHub الخاص بك.
+2.  **إضافة مشروع جديد:** اضغطي على **Add New Project** واختاري نفس الريبو `YOMNA190/MindTrackEDU-Official`.
+3.  **إعدادات المشروع:** في إعدادات المشروع:
+    *   **Framework Preset:** اختاري `Vite`.
+    *   **Root Directory:** اختاري `/nsmpi/frontend`.
+4.  **إعداد المتغيرات البيئية (Environment Variables):** أضيفي المتغيرات التالية:
+    *   **الاسم:** `VITE_API_URL`
+    *   **القيمة:** الرابط الذي نسخته من Railway (مع إضافة `/api` في آخره). على سبيل المثال: `https://backend-production.up.railway.app/api`.
+    *   **الاسم:** `VITE_SOCKET_URL`
+    *   **القيمة:** الرابط الذي نسخته من Railway (بدون إضافة `/api` في آخره). على سبيل المثال: `https://backend-production.up.railway.app`.
+5.  **النشر (Deploy):** اضغطي على **Deploy**.
+
+--- 
+
+## 🚀 لماذا هذا هو الحل الأفضل؟
+
+*   **الاستقرار (Stability):** سيظل `Socket.io` يعمل بسلاسة، مما يضمن استمرارية الدردشة بين الطلاب والمعالجين دون انقطاع في الخدمة.
+*   **الأمان (Security):** ستكون قاعدة البيانات و Redis في بيئة معزولة ومحمية، مما يعزز أمان البيانات.
+*   **قابلية التوسع (Scalability):** إذا نما المشروع، يمكنك زيادة موارد الخادم بسهولة بضغطة زر واحدة دون الحاجة لتعديل أي سطر من التعليمات البرمجية.
+*   **تحسين البناء (Optimized Build):** تم إضافة ملف `railway.toml` في مجلد الواجهة الخلفية (`nsmpi/backend`) لتوجيه Railway صراحةً لاستخدام `Dockerfile` الخاص بالمشروع، مما يحل مشكلة "Error creating build plan with Railpack" ويضمن عملية بناء صحيحة وفعالة.
+
+--- 
+
+## ملاحظات هامة
+
+*   **مسار الـ API:** لاحظي أن مسار الـ API المستخدم في الواجهة الخلفية هو `/api` وليس `/api/v1` كما قد يُفهم من بعض السياقات. تأكدي من استخدام `/api` عند إعداد `VITE_API_URL`.
+*   **ملف `railway.toml`:** هذا الملف يضمن أن Railway يستخدم `Dockerfile` الخاص بك بشكل صحيح، مما يمنع الأخطاء المتعلقة بـ Railpack.

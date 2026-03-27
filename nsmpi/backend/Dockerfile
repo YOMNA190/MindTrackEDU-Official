@@ -9,17 +9,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Install Prisma CLI globally
-RUN npm install -g prisma
-
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build TypeScript
-RUN npm run build
+# Build TypeScript and generate Prisma client
+RUN npx prisma generate && npm run build
 
 # Expose port
 EXPOSE 5000
