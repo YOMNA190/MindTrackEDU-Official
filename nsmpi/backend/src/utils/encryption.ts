@@ -1,38 +1,60 @@
 import CryptoJS from 'crypto-js';
+import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-32-char-encryption-key';
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-32-char-encryption-key-for-aes';
+const ALGORITHM = 'aes-256-cbc';
 
 /**
- * Encrypt sensitive data
+ * Encrypt sensitive data using AES-256-CBC with IV for higher security
  */
 export function encrypt(text: string): string {
   if (!text) return text;
-  return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
 }
 
 /**
- * Decrypt sensitive data
+ * Decrypt sensitive data using AES-256-CBC
  */
 export function decrypt(encryptedText: string): string {
-  if (!encryptedText) return encryptedText;
+  if (!encryptedText || !encryptedText.includes(':')) return encryptedText;
   try {
-    const bytes = CryptoJS.AES.decrypt(encryptedText, ENCRYPTION_KEY);
-    return bytes.toString(CryptoJS.enc.Utf8);
+    const textParts = encryptedText.split(':');
+    const iv = Buffer.from(textParts.shift()!, 'hex');
+    const encryptedData = Buffer.from(textParts.join(':'), 'hex');
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+    let decrypted = decipher.update(encryptedData);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
   } catch (error) {
     return encryptedText;
   }
 }
 
 /**
- * Hash data using SHA-256 (one-way)
+ * Hash data using SHA-512 for better security
  */
 export function hash(data: string): string {
-  return CryptoJS.SHA256(data).toString();
+  return crypto.createHash('sha512').update(data).digest('hex');
 }
 
 /**
- * Generate a random token
+ * Generate a cryptographically secure random token
  */
-export function generateToken(length: number = 32): string {
-  return CryptoJS.lib.WordArray.random(length).toString();
+export function generateSecureToken(length: number = 64): string {
+  return crypto.randomBytes(length).toString('hex');
+}
+
+/**
+ * Generate a key pair for End-to-End Encryption (E2EE)
+ */
+export function generateKeyPair() {
+  return crypto.generateKeyPairSync('rsa', {
+    modulusLength: 4096,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  });
 }
