@@ -1,54 +1,49 @@
 # MindTrackEDU: Official Repository
 
 <div align="center">
+  <img src="./docs/architecture.png" alt="MindTrackEDU Architecture" width="800"/>
   <h3>Revolutionizing Student Mental Health with Global Standards</h3>
   <p><strong>Empowering students, therapists, and educational institutions through data-driven insights and AI-powered support.</strong></p>
 </div>
 
 ---
 
-## 🌟 Project Overview | نظرة عامة على المشروع
+## 🏗️ System Architecture | المعمارية التقنية
 
-**MindTrackEDU** is a comprehensive, multi-platform ecosystem designed to support student mental health. By integrating advanced screening tools, subsidized therapy management, and predictive AI, we bridge the gap between education and mental well-being on a global scale.
+MindTrackEDU is built with a **high-security, scalable architecture** designed for global healthcare standards. 
 
-**MindTrackEDU** هو نظام متكامل مصمم لدعم الصحة النفسية للطلاب. من خلال دمج أدوات الفحص المتقدمة، وإدارة العلاج المدعوم، والذكاء الاصطناعي التنبؤي، نسعى لسد الفجوة بين التعليم والرفاهية النفسية على نطاق عالمي.
+- **Frontend**: React + TypeScript + Vite (Student & Therapist Portals)
+- **Backend**: Node.js + Express + Prisma (Core Business Logic)
+- **Security**: AES-256 & RSA-4096 End-to-End Encryption
+- **Analytics**: Weighted PHQ-9/GAD-7 Clinical Risk Assessment
+
+👉 **[View Detailed Architecture Diagram](./docs/architecture.png)**
+
+---
+
+## 🛠️ Technical Core (Deep Links) | النواة التقنية
+
+For developers and reviewers, here are the direct links to the **actual implementation code**:
+
+| Module | Purpose | Link |
+|--------|---------|------|
+| **Encryption Core** | AES-256 & RSA-4096 Implementation | [encryption.ts](./nsmpi/backend/src/utils/encryption.ts) |
+| **Risk Assessment** | Clinical Scoring & Weighted Analytics | [screeningCalculator.ts](./nsmpi/backend/src/utils/screeningCalculator.ts) |
+| **Messaging Schema** | E2EE Chat Data Structures | [chat.ts](./nsmpi/backend/src/types/chat.ts) |
+| **Global Compliance** | GDPR, HIPAA, & ISO Standards | [COMPLIANCE.md](./COMPLIANCE.md) |
+| **Frontend UI** | React Login & Role-Based Access | [Login.tsx](./app/src/components/Login.tsx) |
 
 ---
 
 ## 🗺️ Global Roadmap | خارطة الطريق العالمية
 
-We have developed a strategic roadmap to scale MindTrackEDU into a global leader in educational and mental health technology. Our roadmap focuses on:
-- **Global Compliance** (GDPR, HIPAA, ISO 27001)
-- **Data Interoperability** (HL7 FHIR)
-- **Advanced AI & Predictive Analytics**
-- **Multi-Cultural & Multi-Lingual Expansion**
+We follow a strategic roadmap to scale MindTrackEDU into a global leader in mental health technology.
 
 👉 **[View the Full Global Roadmap (ROADMAP.md)](./ROADMAP.md)**
-
-لقد قمنا بتطوير خارطة طريق استراتيجية لتحويل MindTrackEDU إلى رائد عالمي في تكنولوجيا التعليم والصحة النفسية. تركز خارطة الطريق الخاصة بنا على:
-- **الامتثال العالمي** (GDPR, HIPAA, ISO 27001)
-- **تبادل البيانات الموحد** (HL7 FHIR)
-- **الذكاء الاصطناعي المتقدم والتحليلات التنبؤية**
-- **التوسع متعدد الثقافات واللغات**
-
-👉 **[عرض خارطة الطريق العالمية الكاملة (ROADMAP.md)](./ROADMAP.md)**
-
----
-
-## 🏗️ Project Structure | هيكل المشروع
-
-The repository is organized into the following modules:
-
-- **`app/`**: The core student and therapist-facing web application (React + TypeScript + Vite).
-- **`nsmpi/`**: The National Student Mental Health Platform Integration, containing:
-  - `backend/`: Node.js, Prisma, Redis, and Docker-ready infrastructure.
-  - `frontend/`: Administrative and analytical dashboards.
 
 ---
 
 ## 🚀 Quick Start | البداية السريعة
-
-To get started with the development environment:
 
 ```bash
 # Clone the repository
@@ -64,14 +59,6 @@ cd ../frontend
 npm install
 npm run dev
 ```
-
----
-
-## 🤝 Contributing | المساهمة
-
-We welcome contributions from developers, mental health professionals, and educational experts worldwide. Please see our [ROADMAP.md](./ROADMAP.md) for more information on how to get involved.
-
-نرحب بمساهمات المطورين، ومتخصصي الصحة النفسية، وخبراء التعليم من جميع أنحاء العالم. يرجى الاطلاع على [ROADMAP.md](./ROADMAP.md) لمزيد من المعلومات حول كيفية المشاركة.
 
 ---
 
