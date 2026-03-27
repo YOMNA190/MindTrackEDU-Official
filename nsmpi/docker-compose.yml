@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nsmpi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-nsmpi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nsmpi_password}
+      POSTGRES_DB: ${DB_NAME:-nsmpi_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nsmpi} -d ${DB_NAME:-nsmpi_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nsmpi-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nsmpi-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${BACKEND_PORT:-5000}
+      DATABASE_URL: postgresql://${DB_USER:-nsmpi}:${DB_PASSWORD:-nsmpi_password}@postgres:5432/${DB_NAME:-nsmpi_db}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret-key}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-your-32-char-encryption-key}
+      FEATURE_SCREENING: ${FEATURE_SCREENING:-true}
+      FEATURE_THERAPIST_BOOKING: ${FEATURE_THERAPIST_BOOKING:-true}
+      FEATURE_NATIONAL_DASHBOARD: ${FEATURE_NATIONAL_DASHBOARD:-true}
+      FEATURE_SUBSIDY_ENGINE: ${FEATURE_SUBSIDY_ENGINE:-true}
+      FEATURE_AI_ML: ${FEATURE_AI_ML:-false}
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nsmpi-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
+      VITE_SOCKET_URL: ${VITE_SOCKET_URL:-http://localhost:5000}
+      VITE_ENABLE_PWA: ${VITE_ENABLE_PWA:-true}
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
