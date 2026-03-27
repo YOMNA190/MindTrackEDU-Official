@@ -1,6 +1,6 @@
 // ==========================================
 // NSMPI - National Student Mental Performance Initiative
-// Prisma Schema
+// Prisma Schema (Fixed Indexes)
 // ==========================================
 
 generator client {
@@ -320,10 +320,10 @@ model Screening {
   // Relations
   therapyRequest      TherapyRequest?
 
+  // ✅ Fixed indexes
   @@index([userId])
   @@index([riskLevel])
   @@index([completedAt])
-  @@index([governorate(userId)])
   @@map("screenings")
 }
 
