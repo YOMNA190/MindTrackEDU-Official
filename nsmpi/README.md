@@ -509,7 +509,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 1.  **تسجيل الدخول:** ادخلي على [Railway.app](https://railway.app/) وسجلي الدخول باستخدام حساب GitHub الخاص بك.
 2.  **إنشاء مشروع جديد:** اضغطي على **New Project** ثم اختاري **Deploy from GitHub repo**.
 3.  **اختيار الريبو:** اختاري الريبو `YOMNA190/MindTrackEDU-Official`.
-4.  **تحديد مسار الجذر (Root Directory):** عندما يُطلب منك تحديد مسار الجذر، اختاري `/nsmpi/backend`.
+4.  **تحديد مسار الجذر (Root Directory):** اتركيه كما هو (الجذر `/`)؛ لأننا قمنا بإضافة ملفات الإعدادات (`railway.toml`, `package.json`) في المجلد الرئيسي لتوجيه Railway تلقائياً لمجلد البناء الصحيح.
 5.  **إعداد المتغيرات البيئية (Environment Variables):** هذه خطوة **بالغة الأهمية**. في إعدادات المتغيرات على Railway، أضيفي جميع المتغيرات الموجودة في ملف `.env.example` الرئيسي (الموجود في `nsmpi/.env.example`). تأكدي بشكل خاص من إضافة وتعيين القيم الصحيحة للمتغيرات التالية:
     *   `DATABASE_URL`: رابط اتصال قاعدة البيانات (PostgreSQL) الذي توفره Railway. ستقوم Railway تلقائيًا بإنشاء قاعدة بيانات PostgreSQL لك وتوفير هذا الرابط.
     *   `REDIS_URL`: رابط اتصال Redis الذي توفره Railway. ستقوم Railway تلقائيًا بإنشاء خدمة Redis لك وتوفير هذا الرابط.
@@ -519,7 +519,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
     *   `VITE_API_URL`: رابط الواجهة الخلفية الخاص بك على Railway متبوعًا بـ `/api` (مثلاً: `https://backend-production.up.railway.app/api`).
     *   `VITE_SOCKET_URL`: رابط الواجهة الخلفية الخاص بك على Railway (مثلاً: `https://backend-production.up.railway.app`).
     
-    *ملاحظة:* ستقوم Railway باستخدام نظام `Nixpacks` (عبر ملف `railway.toml`) لبناء ونشر الواجهة الخلفية. هذا النظام أكثر استقراراً في التعامل مع المشاريع التي تحتوي على مجلدات فرعية.
+    *ملاحظة:* ستقوم Railway الآن بقراءة ملف `railway.toml` الموجود في المجلد الرئيسي (Root) والذي يوجهها تلقائياً لبناء المجلد `/nsmpi/backend` باستخدام نظام `Nixpacks`. لا داعي لتغيير مسار الجذر يدوياً.
 6.  **نسخ رابط الواجهة الخلفية:** بعد نجاح النشر، سيوفر لك Railway رابطًا للواجهة الخلفية (مثلاً: `https://backend-production.up.railway.app`). **انسخي هذا الرابط**، ستحتاجينه في الخطوة التالية.
 
 ### الخطوة الثانية: رفع الواجهة الأمامية (Frontend) على Vercel

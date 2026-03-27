@@ -1,0 +1,15 @@
+{
+  "name": "mindtrackedu-official-root",
+  "version": "1.0.0",
+  "description": "MindTrackEDU-Official Project Root",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install:backend": "cd nsmpi/backend && npm install",
+    "build:backend": "cd nsmpi/backend && npx prisma generate && npm run build",
+    "start:backend": "cd nsmpi/backend && npm start",
+    "deploy:backend": "npm run install:backend && npm run build:backend && npm run start:backend"
+  }
+}
