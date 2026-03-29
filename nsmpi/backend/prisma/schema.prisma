@@ -152,7 +152,6 @@ model User {
   screenings      Screening[]
   therapyRequests TherapyRequest[]
   sessions        Session[] @relation("StudentSessions")
-  therapistSessions Session[] @relation("TherapistSessions")
   notifications   Notification[]
   auditLogs       AuditLog[]
   consents        Consent[]
