@@ -1,7 +1,8 @@
 import { RiskLevel, PrimaryIssue } from '@prisma/client';
 import { ScreeningInput, ScreeningResult, PHQ9Thresholds, GAD7Thresholds } from '../types';
 
-// Default thresholds
+// ─── Thresholds ───────────────────────────────────────────────────────────────
+
 const PHQ9_THRESHOLDS: PHQ9Thresholds = {
   low: 5,
   moderate: 10,
@@ -9,87 +10,100 @@ const PHQ9_THRESHOLDS: PHQ9Thresholds = {
   severe: 20,
 };
 
+// GAD-7 has its own clinical thresholds — previously defined but never used (bug)
 const GAD7_THRESHOLDS: GAD7Thresholds = {
   low: 5,
   moderate: 10,
   high: 15,
 };
 
-/**
- * Calculate PHQ-9 score from answers
- */
+// PHQ-9 max = 27, GAD-7 max = 21
+const PHQ9_MAX = 27;
+const GAD7_MAX = 21;
+
+// ─── Score Calculators ────────────────────────────────────────────────────────
+
 export function calculatePHQ9Score(answers: Record<string, number>): number {
-  return Object.values(answers).reduce((sum, score) => sum + score, 0);
+  return Object.values(answers).reduce((sum, score) => sum + (score ?? 0), 0);
 }
 
-/**
- * Calculate GAD-7 score from answers
- */
 export function calculateGAD7Score(answers: Record<string, number>): number {
-  return Object.values(answers).reduce((sum, score) => sum + score, 0);
+  return Object.values(answers).reduce((sum, score) => sum + (score ?? 0), 0);
 }
 
-/**
- * Calculate Focus score from answers
- */
 export function calculateFocusScore(answers: Record<string, number>): number {
-  return Object.values(answers).reduce((sum, score) => sum + score, 0);
+  return Object.values(answers).reduce((sum, score) => sum + (score ?? 0), 0);
 }
 
+// ─── Risk Level ───────────────────────────────────────────────────────────────
+
 /**
- * Determine risk level based on PHQ-9 and GAD-7 scores
+ * Determines risk by normalising both scores to 0–1 before comparing,
+ * then applying each instrument's own clinical thresholds.
+ * Previously the code applied PHQ-9 thresholds to the raw GAD-7 score, which
+ * gave incorrect clinical classifications.
  */
 export function determineRiskLevel(phq9Score: number, gad7Score: number): RiskLevel {
-  // Use the higher of the two scores to determine risk
-  const maxScore = Math.max(phq9Score, gad7Score);
-  
-  if (maxScore < PHQ9_THRESHOLDS.low) {
-    return RiskLevel.LOW;
-  } else if (maxScore < PHQ9_THRESHOLDS.moderate) {
-    return RiskLevel.MODERATE;
-  } else if (maxScore < PHQ9_THRESHOLDS.high) {
-    return RiskLevel.HIGH;
-  } else {
-    return RiskLevel.SEVERE;
-  }
+  // Normalise to 0–100 so thresholds are scale-independent
+  const phq9Pct = (phq9Score / PHQ9_MAX) * 100;
+  const gad7Pct = (gad7Score / GAD7_MAX) * 100;
+
+  // Use the worse of the two normalised scores
+  const pct = Math.max(phq9Pct, gad7Pct);
+
+  // Map percentages to the PHQ-9 categorical labels (0-18%: low, 18-37%: moderate, 37-55%: high, 55+: severe)
+  if (pct < (PHQ9_THRESHOLDS.low / PHQ9_MAX) * 100)      return RiskLevel.LOW;
+  if (pct < (PHQ9_THRESHOLDS.moderate / PHQ9_MAX) * 100)  return RiskLevel.MODERATE;
+  if (pct < (PHQ9_THRESHOLDS.high / PHQ9_MAX) * 100)      return RiskLevel.HIGH;
+  return RiskLevel.SEVERE;
 }
 
+// ─── Primary Issue ────────────────────────────────────────────────────────────
+
 /**
- * Determine primary issue based on scores
+ * Normalises each score to its max before weighting so different scales
+ * are comparable. The raw multiplication by 1.5 without normalisation was a bug.
  */
 export function determinePrimaryIssue(
   phq9Score: number,
   gad7Score: number,
-  focusScore: number
+  focusScore: number,
+  focusMax: number = 21 // default: 7 questions × max score 3
 ): PrimaryIssue {
+  const phq9Norm  = phq9Score  / PHQ9_MAX;
+  const gad7Norm  = gad7Score  / GAD7_MAX;
+  const focusNorm = focusMax > 0 ? (focusScore / focusMax) * 1.2 : 0; // slight upweight for focus
+
   const scores = [
-    { issue: PrimaryIssue.DEPRESSION, score: phq9Score },
-    { issue: PrimaryIssue.ANXIETY, score: gad7Score },
-    { issue: PrimaryIssue.FOCUS, score: focusScore * 1.5 }, // Weight focus higher
+    { issue: PrimaryIssue.DEPRESSION, score: phq9Norm },
+    { issue: PrimaryIssue.ANXIETY,    score: gad7Norm },
+    { issue: PrimaryIssue.FOCUS,      score: focusNorm },
   ];
 
   scores.sort((a, b) => b.score - a.score);
-  
-  // If all scores are low, mark as stress/other
-  if (scores[0].score < 5) {
-    return PrimaryIssue.STRESS;
-  }
+
+  // If all normalised scores are below 15%, classify as general stress/other
+  if (scores[0].score < 0.15) return PrimaryIssue.STRESS;
 
   return scores[0].issue;
 }
 
+// ─── Academic Impact ──────────────────────────────────────────────────────────
+
 /**
- * Calculate academic impact score (0-1)
+ * Returns a 0–1 impact score. Guards against NaN when focusAnswers is empty.
  */
 export function calculateAcademicImpact(focusAnswers: Record<string, number>): number {
-  const focusScore = calculateFocusScore(focusAnswers);
-  const maxFocusScore = Object.keys(focusAnswers).length * 3; // Max score per question is 3
+  const keys = Object.keys(focusAnswers);
+  if (keys.length === 0) return 0; // Guard: was previously NaN (0 / 0)
+
+  const focusScore  = calculateFocusScore(focusAnswers);
+  const maxFocusScore = keys.length * 3; // max score per question is 3
   return Math.min(focusScore / maxFocusScore, 1);
 }
 
-/**
- * Generate explanation text based on results
- */
+// ─── Explanation ─────────────────────────────────────────────────────────────
+
 export function generateExplanation(
   riskLevel: RiskLevel,
   primaryIssue: PrimaryIssue,
@@ -116,35 +130,35 @@ export function generateExplanation(
   };
 
   const issueNames: Record<PrimaryIssue, { en: string; ar: string }> = {
-    [PrimaryIssue.ANXIETY]: { en: 'anxiety', ar: 'القلق' },
-    [PrimaryIssue.DEPRESSION]: { en: 'depression', ar: 'الاكتئاب' },
-    [PrimaryIssue.FOCUS]: { en: 'focus difficulties', ar: 'صعوبات التركيز' },
-    [PrimaryIssue.STRESS]: { en: 'stress', ar: 'التوتر' },
-    [PrimaryIssue.OTHER]: { en: 'other concerns', ar: 'مخاوف أخرى' },
+    [PrimaryIssue.ANXIETY]:    { en: 'anxiety',          ar: 'القلق' },
+    [PrimaryIssue.DEPRESSION]: { en: 'depression',       ar: 'الاكتئاب' },
+    [PrimaryIssue.FOCUS]:      { en: 'focus difficulties', ar: 'صعوبات التركيز' },
+    [PrimaryIssue.STRESS]:     { en: 'stress',           ar: 'التوتر' },
+    [PrimaryIssue.OTHER]:      { en: 'other concerns',   ar: 'مخاوف أخرى' },
   };
 
-  const baseExplanation = explanations[riskLevel];
+  const base      = explanations[riskLevel];
   const issueName = issueNames[primaryIssue];
 
   return {
-    en: `${baseExplanation.en} Primary concern: ${issueName.en}. PHQ-9: ${phq9Score}/27, GAD-7: ${gad7Score}/21.`,
-    ar: `${baseExplanation.ar} القلق الأساسي: ${issueName.ar}. PHQ-9: ${phq9Score}/27، GAD-7: ${gad7Score}/21.`,
+    en: `${base.en} Primary concern: ${issueName.en}. PHQ-9: ${phq9Score}/27, GAD-7: ${gad7Score}/21.`,
+    ar: `${base.ar} القلق الأساسي: ${issueName.ar}. PHQ-9: ${phq9Score}/27، GAD-7: ${gad7Score}/21.`,
   };
 }
 
-/**
- * Process a complete screening and return results
- */
+// ─── Full Screening Processor ─────────────────────────────────────────────────
+
 export function processScreening(input: ScreeningInput): ScreeningResult {
-  const phq9Score = calculatePHQ9Score(input.phq9Answers);
-  const gad7Score = calculateGAD7Score(input.gad7Answers);
+  const phq9Score  = calculatePHQ9Score(input.phq9Answers);
+  const gad7Score  = calculateGAD7Score(input.gad7Answers);
   const focusScore = calculateFocusScore(input.focusAnswers);
   const totalScore = phq9Score + gad7Score + focusScore;
 
-  const riskLevel = determineRiskLevel(phq9Score, gad7Score);
-  const primaryIssue = determinePrimaryIssue(phq9Score, gad7Score, focusScore);
+  const focusMax           = Object.keys(input.focusAnswers).length * 3;
+  const riskLevel          = determineRiskLevel(phq9Score, gad7Score);
+  const primaryIssue       = determinePrimaryIssue(phq9Score, gad7Score, focusScore, focusMax);
   const academicImpactScore = calculateAcademicImpact(input.focusAnswers);
-  const explanation = generateExplanation(riskLevel, primaryIssue, phq9Score, gad7Score);
+  const explanation        = generateExplanation(riskLevel, primaryIssue, phq9Score, gad7Score);
 
   return {
     phq9Score,
@@ -158,9 +172,8 @@ export function processScreening(input: ScreeningInput): ScreeningResult {
   };
 }
 
-/**
- * Check if student qualifies for subsidized therapy
- */
+// ─── Subsidy Eligibility ──────────────────────────────────────────────────────
+
 export function qualifiesForSubsidy(
   riskLevel: RiskLevel,
   academicImpactScore: number

@@ -5,7 +5,13 @@ import '../styles/design-system.css';
  * MindTrackEDU: Premium Therapist Dashboard
  * Features: Patient management, session tracking, clinical insights, notes
  */
-const TherapistDashboard: React.FC = () => {
+interface DashboardProps {
+  onLogout: () => void;
+  onNavigate: (page: any) => void;
+  onProfileClick: () => void;
+}
+
+const TherapistDashboard: React.FC<DashboardProps> = ({ onLogout: _onLogout, onNavigate: _onNavigate, onProfileClick: _onProfileClick }) => {
   const [activeTab, setActiveTab] = useState<'patients' | 'sessions' | 'insights'>('patients');
 
   const patients = [

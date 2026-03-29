@@ -3,37 +3,65 @@
  */
 
 export enum MessageType {
-  TEXT = 'TEXT',
-  FILE = 'FILE',
-  IMAGE = 'IMAGE',
-  VIDEO_CALL_INVITE = 'VIDEO_CALL_INVITE'
+  TEXT             = 'TEXT',
+  FILE             = 'FILE',
+  IMAGE            = 'IMAGE',
+  VIDEO_CALL_INVITE = 'VIDEO_CALL_INVITE',
 }
 
 export interface ChatMessage {
-  id: string;
-  senderId: string;
+  id:        string;
+  senderId:  string;
   receiverId: string;
   sessionId: string;
-  content: string; // Encrypted content
-  type: MessageType;
-  isRead: boolean;
+  /** AES-256-GCM encrypted content — see utils/encryption.ts */
+  content:   string;
+  type:      MessageType;
+  isRead:    boolean;
   createdAt: Date;
-  metadata?: Record<string, any>;
+  /** Strongly-typed optional metadata instead of `any` */
+  metadata?: ChatMessageMetadata;
+}
+
+export interface ChatMessageMetadata {
+  /** For FILE / IMAGE messages */
+  fileName?:    string;
+  fileSize?:    number;
+  mimeType?:    string;
+  storageKey?:  string;
+  /** For VIDEO_CALL_INVITE messages */
+  callRoomId?:  string;
+  callType?:    'video' | 'audio';
+  /** Delivery receipt timestamp */
+  deliveredAt?: Date;
 }
 
 export interface ChatSession {
-  id: string;
-  studentId: string;
+  id:          string;
+  studentId:   string;
   therapistId: string;
-  status: 'ACTIVE' | 'ARCHIVED' | 'PENDING';
+  status:      'ACTIVE' | 'ARCHIVED' | 'PENDING';
   lastMessageAt: Date;
-  encryptionPublicKey: string; // For E2EE
+  /**
+   * RSA-4096 public key in PEM format used by the sender to encrypt the AES
+   * session key for each message (envelope encryption pattern).
+   */
+  encryptionPublicKey: string;
 }
 
 export interface ChatNotification {
-  userId: string;
+  userId:    string;
   messageId: string;
-  title: string;
-  body: string;
-  payload: any;
+  title:     string;
+  body:      string;
+  /** Typed payload — eliminates the `any` anti-pattern */
+  payload:   ChatNotificationPayload;
+}
+
+export interface ChatNotificationPayload {
+  sessionId:   string;
+  messageType: MessageType;
+  senderName?: string;
+  /** ISO timestamp so the client can display relative time without a DB call */
+  timestamp:   string;
 }

@@ -1,15 +1,21 @@
 {
   "name": "mindtrackedu-official-root",
   "version": "1.0.0",
-  "description": "MindTrackEDU-Official Project Root",
+  "description": "MindTrackEDU — Student Mental Health Platform",
   "private": true,
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "install:backend": "cd nsmpi/backend && npm install",
-    "build:backend": "cd nsmpi/backend && npx prisma generate && npm run build",
-    "start:backend": "cd nsmpi/backend && npm start",
-    "deploy:backend": "npm run install:backend && npm run build:backend && npm run start:backend"
+    "install:all":      "npm run install:backend && npm run install:frontend",
+    "install:backend":  "cd nsmpi/backend && npm install",
+    "install:frontend": "cd app && npm install",
+    "build:backend":    "cd nsmpi/backend && npx prisma generate && npm run build",
+    "build:frontend":   "cd app && npm run build",
+    "build:all":        "npm run build:backend && npm run build:frontend",
+    "start:backend":    "cd nsmpi/backend && npm start",
+    "dev:backend":      "cd nsmpi/backend && npm run dev",
+    "dev:frontend":     "cd app && npm run dev",
+    "deploy:backend":   "npm run install:backend && npm run build:backend && npm run start:backend"
   }
 }

@@ -5,7 +5,13 @@ import '../styles/design-system.css';
  * MindTrackEDU: Premium Student Dashboard
  * Features: Mental health tracking, mood monitoring, resources, therapist connection
  */
-const StudentDashboard: React.FC = () => {
+interface DashboardProps {
+  onLogout: () => void;
+  onNavigate: (page: any) => void;
+  onProfileClick: () => void;
+}
+
+const StudentDashboard: React.FC<DashboardProps> = ({ onLogout: _onLogout, onNavigate: _onNavigate, onProfileClick: _onProfileClick }) => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
 
   const moods = [

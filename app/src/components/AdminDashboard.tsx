@@ -5,7 +5,13 @@ import '../styles/design-system.css';
  * MindTrackEDU: Premium Admin Dashboard
  * Features: System monitoring, user management, analytics, compliance
  */
-const AdminDashboard: React.FC = () => {
+interface DashboardProps {
+  onLogout: () => void;
+  onNavigate: (page: any) => void;
+  onProfileClick: () => void;
+}
+
+const AdminDashboard: React.FC<DashboardProps> = ({ onLogout: _onLogout, onNavigate: _onNavigate, onProfileClick: _onProfileClick }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'compliance'>('overview');
 
   const stats = [

@@ -1,128 +1,50 @@
-import { useState } from 'react'
-import './App.css'
-import './styles/design-system.css'
-import PremiumLogin from './components/PremiumLogin'
-import PremiumRegister from './components/PremiumRegister'
-import StudentDashboard from './components/StudentDashboard'
-import TherapistDashboard from './components/TherapistDashboard'
-import AdminDashboard from './components/AdminDashboard'
-import UserProfile from './components/UserProfile'
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-type Page = 'login' | 'register' | 'student-dashboard' | 'therapist-dashboard' | 'admin-dashboard' | 'profile'
+const Login              = lazy(() => import('./components/Login'));
+const StudentDashboard   = lazy(() => import('./pages/StudentDashboard'));
+const TherapistDashboard = lazy(() => import('./pages/TherapistDashboard'));
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('login')
-  const [userRole, setUserRole] = useState<'student' | 'therapist' | 'admin' | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  // Handle login
-  const handleLogin = (role: 'student' | 'therapist' | 'admin') => {
-    setUserRole(role)
-    setIsAuthenticated(true)
-    
-    // Route based on role
-    switch (role) {
-      case 'student':
-        setCurrentPage('student-dashboard')
-        break
-      case 'therapist':
-        setCurrentPage('therapist-dashboard')
-        break
-      case 'admin':
-        setCurrentPage('admin-dashboard')
-        break
-    }
-  }
-
-  // Handle logout
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    setUserRole(null)
-    setCurrentPage('login')
-  }
-
-  // Handle navigation
-  const navigate = (page: Page) => {
-    setCurrentPage(page)
-  }
-
-  // Render based on current page
-  const renderPage = () => {
-    if (!isAuthenticated) {
-      if (currentPage === 'register') {
-        return (
-          <PremiumRegister
-            onRegisterSuccess={() => {
-              setCurrentPage('login')
-            }}
-            onLoginClick={() => setCurrentPage('login')}
-          />
-        )
-      }
-      return (
-        <PremiumLogin
-          onLoginSuccess={handleLogin}
-          onRegisterClick={() => setCurrentPage('register')}
-        />
-      )
-    }
-
-    // Authenticated pages
-    switch (currentPage) {
-      case 'student-dashboard':
-        return (
-          <StudentDashboard
-            onLogout={handleLogout}
-            onNavigate={navigate}
-            onProfileClick={() => setCurrentPage('profile')}
-          />
-        )
-      case 'therapist-dashboard':
-        return (
-          <TherapistDashboard
-            onLogout={handleLogout}
-            onNavigate={navigate}
-            onProfileClick={() => setCurrentPage('profile')}
-          />
-        )
-      case 'admin-dashboard':
-        return (
-          <AdminDashboard
-            onLogout={handleLogout}
-            onNavigate={navigate}
-            onProfileClick={() => setCurrentPage('profile')}
-          />
-        )
-      case 'profile':
-        return (
-          <UserProfile
-            userRole={userRole}
-            onLogout={handleLogout}
-            onBack={() => {
-              if (userRole === 'student') setCurrentPage('student-dashboard')
-              else if (userRole === 'therapist') setCurrentPage('therapist-dashboard')
-              else if (userRole === 'admin') setCurrentPage('admin-dashboard')
-            }}
-          />
-        )
-      default:
-        return (
-          <PremiumLogin
-            onLoginSuccess={handleLogin}
-            onRegisterClick={() => setCurrentPage('register')}
-          />
-        )
-    }
-  }
-
-  return (
+const Loader = () => (
+  <div style={{
+    minHeight: '100vh',
+    background: '#050a0f',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}>
     <div style={{
-      minHeight: '100vh',
-      background: 'var(--bg-secondary)',
-    }}>
-      {renderPage()}
-    </div>
-  )
+      width: 40,
+      height: 40,
+      border: '3px solid rgba(74,222,128,0.2)',
+      borderTopColor: '#4ade80',
+      borderRadius: '50%',
+      animation: 'spin 0.7s linear infinite',
+    }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
+  </div>
+);
+
+function isAuthenticated(): boolean {
+  return !!localStorage.getItem('mt_token');
 }
 
-export default App
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          <Route path="/login"             element={<Login />} />
+          <Route path="/student/dashboard"   element={<RequireAuth><StudentDashboard /></RequireAuth>} />
+          <Route path="/therapist/dashboard" element={<RequireAuth><TherapistDashboard /></RequireAuth>} />
+          <Route path="/"                  element={<Navigate to={isAuthenticated() ? '/student/dashboard' : '/login'} replace />} />
+          <Route path="*"                  element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  );
+}

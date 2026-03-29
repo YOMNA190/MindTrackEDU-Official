@@ -5,7 +5,12 @@ import '../styles/design-system.css';
  * MindTrackEDU: Premium Register Component
  * Features: Multi-role registration, form validation, bilingual support
  */
-const PremiumRegister: React.FC = () => {
+interface PremiumRegisterProps {
+  onRegisterSuccess: () => void;
+  onLoginClick: () => void;
+}
+
+const PremiumRegister: React.FC<PremiumRegisterProps> = ({ onRegisterSuccess: _onRegisterSuccess, onLoginClick: _onLoginClick }) => {
   const [role, setRole] = useState<'student' | 'therapist'>('student');
   const [formData, setFormData] = useState({
     fullName: '',

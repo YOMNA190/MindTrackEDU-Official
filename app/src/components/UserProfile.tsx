@@ -5,7 +5,13 @@ import '../styles/design-system.css';
  * MindTrackEDU: Premium User Profile
  * Features: Profile management, preferences, security settings
  */
-const UserProfile: React.FC = () => {
+interface UserProfileProps {
+  userRole: 'student' | 'therapist' | 'admin' | null;
+  onLogout: () => void;
+  onBack: () => void;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ userRole: _userRole, onLogout: _onLogout, onBack: _onBack }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'security'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
