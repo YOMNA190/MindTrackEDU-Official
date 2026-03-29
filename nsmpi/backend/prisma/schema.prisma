@@ -1,6 +1,5 @@
 // ==========================================
-// NSMPI - National Student Mental Performance Initiative
-// Prisma Schema (Fixed Indexes)
+// MindTrackEDU - Simplified Schema
 // ==========================================
 
 generator client {
@@ -19,24 +18,7 @@ datasource db {
 enum UserRole {
   STUDENT
   THERAPIST
-  EDUCATIONAL_ADMIN
-  HEALTH_ADMIN
-  SUPER_ADMIN
-}
-
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-  PREFER_NOT_TO_SAY
-}
-
-enum EducationLevel {
-  PRIMARY
-  SECONDARY
-  HIGH_SCHOOL
-  UNIVERSITY
-  GRADUATE
+  ADMIN
 }
 
 enum RiskLevel {
@@ -46,86 +28,10 @@ enum RiskLevel {
   SEVERE
 }
 
-enum PrimaryIssue {
-  ANXIETY
-  DEPRESSION
-  FOCUS
-  STRESS
-  OTHER
-}
-
-enum TherapyRequestStatus {
-  PENDING
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-  COMPLETED
-}
-
 enum SessionStatus {
   SCHEDULED
-  CONFIRMED
-  IN_PROGRESS
   COMPLETED
   CANCELLED
-  NO_SHOW
-}
-
-enum NotificationType {
-  SCREENING_COMPLETE
-  SUBSIDY_APPROVED
-  SESSION_BOOKED
-  SESSION_REMINDER
-  SESSION_CANCELLED
-  THERAPIST_ASSIGNED
-  SYSTEM_ANNOUNCEMENT
-}
-
-enum ConsentType {
-  REGISTRATION
-  SCREENING
-  DATA_SHARING
-  THERAPY
-}
-
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  VIEW
-  LOGIN
-  LOGOUT
-  EXPORT
-}
-
-enum Governorate {
-  CAIRO
-  ALEXANDRIA
-  GIZA
-  QALYUBIA
-  PORT_SAID
-  SUEZ
-  LUXOR
-  ASYUT
-  ISMAILIA
-  FAYOUM
-  SHARQIA
-  DAKAHLIA
-  ASWAN
-  BEHEIRA
-  MINYA
-  QENA
-  SOHAG
-  MONUFIA
-  GHARBIA
-  BENI_SUEF
-  KAFR_EL_SHEIKH
-  MATRUH
-  NEW_VALLEY
-  NORTH_SINAI
-  SOUTH_SINAI
-  RED_SEA
-  DAMIETTA
 }
 
 // ==========================================
@@ -136,483 +42,100 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  role      UserRole
+  role      UserRole @default(STUDENT)
   isActive  Boolean  @default(true)
-  emailVerified Boolean @default(false)
-  lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Profile relations
-  studentProfile   StudentProfile?
-  therapistProfile TherapistProfile?
-  adminProfile     AdminProfile?
-
   // Relations
-  screenings      Screening[]
-  therapyRequests TherapyRequest[]
-  sessions        Session[] @relation("StudentSessions")
-  notifications   Notification[]
-  auditLogs       AuditLog[]
-  consents        Consent[]
-  feedbacks       SessionFeedback[]
+  profile       Profile?
+  screenings    Screening[]
+  sessions      Session[]
+  notifications Notification[]
 
   @@index([email])
   @@index([role])
-  @@index([isActive])
   @@map("users")
 }
 
-model StudentProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Personal Information
-  firstName         String
-  lastName          String
-  firstNameAr       String?
-  lastNameAr        String?
-  dateOfBirth       DateTime?
-  gender            Gender?
-  phone             String?
+  firstName String
+  lastName  String
+  phone     String?
+  avatar    String?
   
-  // Educational Information
-  educationLevel    EducationLevel?
-  institutionName   String?
-  gradeYear         String?
-  studentId         String?
-  
-  // Location
-  governorate       Governorate?
-  city              String?
-  address           String?
-  
-  // Socioeconomic (optional, for subsidy calculation)
-  familyIncomeLevel Int?     @db.SmallInt // 1-5 scale
-  hasHealthInsurance Boolean @default(false)
-  
-  // Emergency Contact
-  emergencyName     String?
-  emergencyPhone    String?
-  emergencyRelation String?
-  
-  // Metadata
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([governorate])
-  @@index([educationLevel])
-  @@map("student_profiles")
+  @@map("profiles")
 }
-
-model TherapistProfile {
-  id              String   @id @default(uuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Professional Information
-  firstName       String
-  lastName        String
-  firstNameAr     String?
-  lastNameAr      String?
-  licenseNumber   String   @unique
-  specialization  String
-  yearsExperience Int
-  qualifications  String[]
-  
-  // Contact
-  phone           String
-  email           String
-  
-  // Location & Availability
-  governorate     Governorate
-  city            String
-  address         String?
-  isOnlineAvailable Boolean @default(true)
-  isInPersonAvailable Boolean @default(true)
-  
-  // Working Hours (JSON: {monday: [{start: "09:00", end: "17:00"}], ...})
-  workingHours    Json?
-  
-  // Status
-  isVerified      Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  verificationDate DateTime?
-  
-  // Relations
-  sessions        Session[] @relation("TherapistSessions")
-  therapyRequests TherapyRequest[]
-  maxStudents     Int      @default(20)
-  currentStudents Int      @default(0)
-  
-  // Metadata
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([governorate])
-  @@index([specialization])
-  @@index([isVerified, isActive])
-  @@map("therapist_profiles")
-}
-
-model AdminProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  firstName   String
-  lastName    String
-  firstNameAr String?
-  lastNameAr  String?
-  phone       String?
-  department  String?
-  employeeId  String?
-  
-  // Admin-specific permissions
-  permissions Json?    // Array of allowed actions
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("admin_profiles")
-}
-
-// ==========================================
-// Screening Module
-// ==========================================
 
 model Screening {
-  id                  String   @id @default(uuid())
-  userId              String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // PHQ-9 Scores (0-27)
-  phq9Score           Int
-  phq9Answers         Json     // {q1: 2, q2: 1, ...}
-  
-  // GAD-7 Scores (0-21)
-  gad7Score           Int
-  gad7Answers         Json     // {q1: 1, q2: 2, ...}
-  
-  // Focus Questions (0-15)
-  focusScore          Int
-  focusAnswers        Json     // {q1: 2, q2: 3, ...}
-  
-  // Calculated Fields
-  totalScore          Int
-  riskLevel           RiskLevel
-  primaryIssue        PrimaryIssue
-  academicImpactScore Float    @db.Real // 0-1
-  
-  // Results explanation
-  resultsExplanation  Json?    // Multi-language explanation
-  
-  // Improvement tracking
-  previousScreeningId String?
-  improvementScore    Float?   // Difference from previous
+  // Scores
+  phq9Score     Int       @default(0)
+  gad7Score     Int       @default(0)
+  totalScore    Int       @default(0)
+  riskLevel     RiskLevel @default(LOW)
   
   // Metadata
-  completedAt         DateTime @default(now())
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
-  // Relations
-  therapyRequest      TherapyRequest?
+  completedAt   DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // ✅ Fixed indexes
   @@index([userId])
   @@index([riskLevel])
-  @@index([completedAt])
   @@map("screenings")
 }
 
-// ==========================================
-// Therapy & Subsidy Module
-// ==========================================
-
-model TherapyRequest {
-  id                  String               @id @default(uuid())
-  userId              String
-  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  screeningId         String               @unique
-  screening           Screening            @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+model Session {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Request Details
-  status              TherapyRequestStatus @default(PENDING)
-  requestedAt         DateTime             @default(now())
-  reviewedAt          DateTime?
-  reviewedBy          String?
+  title       String
+  description String?
+  scheduledAt DateTime
+  duration    Int           @default(60)
+  status      SessionStatus @default(SCHEDULED)
   
-  // Subsidy Calculation
-  subsidyPercentage   Int                  @default(0) // 0-90
-  subsidyCalculation  Json?                // Detailed breakdown
-  maxSessionsCovered  Int                  @default(0)
-  
-  // Approval Details
-  approvedBy          String?
-  approvalNotes       String?
-  
-  // Assigned Therapist
-  assignedTherapistId String?
-  assignedTherapist   TherapistProfile?    @relation(fields: [assignedTherapistId], references: [id], onDelete: SetNull)
-  
-  // Sessions
-  sessions            Session[]
-  
-  // Metadata
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([userId])
-  @@index([status])
-  @@index([assignedTherapistId])
-  @@map("therapy_requests")
-}
-
-model Session {
-  id                String        @id @default(uuid())
-  
-  // Relations
-  therapyRequestId  String
-  therapyRequest    TherapyRequest @relation(fields: [therapyRequestId], references: [id], onDelete: Cascade)
-  
-  studentId         String
-  student           User          @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
-  
-  therapistId       String
-  therapist         TherapistProfile @relation("TherapistSessions", fields: [therapistId], references: [id], onDelete: Cascade)
-  
-  // Session Details
-  scheduledAt       DateTime
-  duration          Int           @default(60) // minutes
-  sessionType       String        @default("INDIVIDUAL") // INDIVIDUAL, GROUP, ONLINE
-  status            SessionStatus @default(SCHEDULED)
-  
-  // Location
-  isOnline          Boolean       @default(false)
-  meetingLink       String?
-  locationAddress   String?
-  
-  // Session Content
-  notes             String?       @db.Text // Therapist notes (encrypted)
-  studentNotes      String?       @db.Text // Shared with student
-  
-  // Attendance & Progress
-  attendedAt        DateTime?
-  completedAt       DateTime?
-  cancelledAt       DateTime?
-  cancellationReason String?
-  
-  // Progress tracking
-  progressRating    Int?          @db.SmallInt // 1-10
-  moodBefore        Int?          @db.SmallInt // 1-10
-  moodAfter         Int?          @db.SmallInt // 1-10
-  
-  // Metadata
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
-  // Relations
-  feedback          SessionFeedback?
-  notifications     Notification[]
-
-  @@index([studentId])
-  @@index([therapistId])
   @@index([scheduledAt])
-  @@index([status])
   @@map("sessions")
 }
 
-model SessionFeedback {
-  id          String   @id @default(uuid())
-  sessionId   String   @unique
-  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  studentId   String
-  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  // Feedback
-  rating      Int      @db.SmallInt // 1-5
-  wasHelpful  Boolean
-  comments    String?  @db.Text
-  
-  // Would recommend
-  wouldRecommend Boolean?
-  
-  // Metadata
-  submittedAt DateTime @default(now())
-  isAnonymous Boolean  @default(false)
-
-  @@index([sessionId])
-  @@index([studentId])
-  @@map("session_feedbacks")
-}
-
-// ==========================================
-// Notifications & Audit
-// ==========================================
-
 model Notification {
-  id          String           @id @default(uuid())
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  type        NotificationType
-  title       String
-  titleAr     String?
-  message     String
-  messageAr   String?
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
   
-  // Related entity
-  sessionId   String?
-  session     Session?         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  // Status
-  isRead      Boolean          @default(false)
-  readAt      DateTime?
-  
-  // Metadata
-  createdAt   DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([isRead])
-  @@index([createdAt])
   @@map("notifications")
 }
 
-model AuditLog {
-  id          String      @id @default(uuid())
-  userId      String?
-  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  action      AuditAction
-  entityType  String      // e.g., "User", "Screening", "Session"
-  entityId    String?
-  
-  // Details
-  oldValues   Json?
-  newValues   Json?
-  description String?
-  
-  // Context
-  ipAddress   String?
-  userAgent   String?
-  
-  // Metadata
-  createdAt   DateTime    @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// ==========================================
-// Consent & Privacy
-// ==========================================
-
-model Consent {
-  id          String      @id @default(uuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type        ConsentType
-  version     String      // Consent form version
-  
-  // Consent status
-  given       Boolean
-  givenAt     DateTime    @default(now())
-  withdrawnAt DateTime?
-  
-  // IP and context
-  ipAddress   String?
-  userAgent   String?
-  
-  // Withdrawal
-  withdrawalReason String?
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  @@unique([userId, type, version])
-  @@index([userId])
-  @@index([type])
-  @@map("consents")
-}
-
-// ==========================================
-// System Settings & Configuration
-// ==========================================
-
 model SystemSetting {
-  id          String   @id @default(uuid())
-  key         String   @unique
-  value       Json
-  description String?
-  updatedBy   String?
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("system_settings")
-}
-
-// ==========================================
-// Aggregate Views (for National Dashboard)
-// ==========================================
-
-model AggregateStats {
-  id                  String   @id @default(uuid())
-  
-  // Time period
-  periodStart         DateTime
-  periodEnd           DateTime
-  periodType          String   // DAILY, WEEKLY, MONTHLY, YEARLY
-  
-  // Location filter
-  governorate         Governorate?
-  
-  // Education filter
-  educationLevel      EducationLevel?
-  
-  // Aggregate metrics
-  totalScreenings     Int      @default(0)
-  avgPhq9Score        Float?
-  avgGad7Score        Float?
-  avgFocusScore       Float?
-  avgAcademicImpact   Float?
-  
-  // Risk distribution
-  lowRiskCount        Int      @default(0)
-  moderateRiskCount   Int      @default(0)
-  highRiskCount       Int      @default(0)
-  severeRiskCount     Int      @default(0)
-  
-  // Issue distribution
-  anxietyCount        Int      @default(0)
-  depressionCount     Int      @default(0)
-  focusCount          Int      @default(0)
-  stressCount         Int      @default(0)
-  otherCount          Int      @default(0)
-  
-  // Therapy metrics
-  totalTherapyRequests Int     @default(0)
-  approvedRequests    Int      @default(0)
-  totalSessions       Int      @default(0)
-  completedSessions   Int      @default(0)
-  
-  // KPIs
-  improvementRate     Float?   // % of students improved after 3+ sessions
-  therapistUtilization Float?  // % of therapist capacity used
-  estimatedCostSavings Float?  // Mock calculation
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@unique([periodStart, periodEnd, periodType, governorate, educationLevel])
-  @@index([periodStart])
-  @@index([governorate])
-  @@index([educationLevel])
-  @@map("aggregate_stats")
 }
