@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd nsmpi/backend && npm install && npx prisma generate && npm run build"
+buildCommand = "cd nsmpi/backend && npm install --legacy-peer-deps && npx prisma generate && npm run build || exit 1"
 
 [deploy]
 startCommand = "cd nsmpi/backend && npx prisma migrate deploy && npx prisma db seed && npm start"
