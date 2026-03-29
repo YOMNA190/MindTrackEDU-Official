@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import '../styles/design-system.css';
 
+interface PremiumLoginProps {
+  onLoginSuccess?: (role: 'student' | 'therapist' | 'admin') => void;
+  onRegisterClick?: () => void;
+}
+
 /**
  * MindTrackEDU: Premium Login Component
  * Features: Multi-role authentication, bilingual support, premium design
  * Inspired by Stripe, Apple, and Notion
  */
-const PremiumLogin: React.FC = () => {
+const PremiumLogin: React.FC<PremiumLoginProps> = ({ onLoginSuccess, onRegisterClick }) => {
   const [role, setRole] = useState<'student' | 'therapist' | 'admin'>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +26,9 @@ const PremiumLogin: React.FC = () => {
     setTimeout(() => {
       console.log(`Logging in as ${role} with ${email}`);
       setIsLoading(false);
+      if (onLoginSuccess) {
+        onLoginSuccess(role);
+      }
     }, 1000);
   };
 
@@ -353,23 +361,35 @@ const PremiumLogin: React.FC = () => {
         }}>
           <p>
             Don't have an account?{' '}
-            <a href="#" style={{
-              color: 'var(--primary-600)',
-              fontWeight: '600',
-              textDecoration: 'none',
-            }}>
+            <button
+              onClick={onRegisterClick}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary-600)',
+                fontWeight: '600',
+                textDecoration: 'none',
+                cursor: 'pointer',
+              }}
+            >
               Sign up
-            </a>
+            </button>
           </p>
           <p style={{ marginTop: 'var(--space-2)' }}>
             ليس لديك حساب؟{' '}
-            <a href="#" style={{
-              color: 'var(--primary-600)',
-              fontWeight: '600',
-              textDecoration: 'none',
-            }}>
+            <button
+              onClick={onRegisterClick}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary-600)',
+                fontWeight: '600',
+                textDecoration: 'none',
+                cursor: 'pointer',
+              }}
+            >
               سجل الآن
-            </a>
+            </button>
           </p>
         </div>
       </div>
