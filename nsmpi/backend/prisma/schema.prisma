@@ -243,6 +243,7 @@ model TherapistProfile {
   
   // Relations
   sessions        Session[] @relation("TherapistSessions")
+  therapyRequests TherapyRequest[]
   maxStudents     Int      @default(20)
   currentStudents Int      @default(0)
   
@@ -355,7 +356,7 @@ model TherapyRequest {
   
   // Assigned Therapist
   assignedTherapistId String?
-  assignedTherapist   TherapistProfile?    @relation(fields: [assignedTherapistId], references: [id])
+  assignedTherapist   TherapistProfile?    @relation(fields: [assignedTherapistId], references: [id], onDelete: SetNull)
   
   // Sessions
   sessions            Session[]
